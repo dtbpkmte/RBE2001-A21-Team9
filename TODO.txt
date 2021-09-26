@@ -1,6 +1,2 @@
-- make a plate for breadboard
-- add & adjust square shafts
-- add holes for motor base
-- modify bottom part of walls & add holes for standoffs
 - add screws
 - change wall shape -> Pikachu?
