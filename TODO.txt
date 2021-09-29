@@ -1,2 +1,4 @@
 - add screws
-- change wall shape -> Pikachu?
+- 2 supports front & back
+- rethink base connection to chassis (move wall further?)
+- add washer/chamfer
