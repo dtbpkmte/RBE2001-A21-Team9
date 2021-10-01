@@ -1,4 +1,3 @@
 - add screws
-- 2 supports front & back
-- rethink base connection to chassis (move wall further?)
-- add washer/chamfer
+- add front & back supports
+- fix base connection to chassis
