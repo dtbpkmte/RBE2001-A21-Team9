@@ -1,3 +1,2 @@
 - add screws
-- add front & back supports
-- fix base connection to chassis
+- 2nd fourbar
