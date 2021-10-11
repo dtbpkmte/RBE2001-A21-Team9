@@ -15,6 +15,6 @@ class BlueMotor {
   const int PWM = 5;
   const int AIN2 = 23;
   const int AIN1 = 27;
-  const int ENCA = 19;
+  const int ENCA = 21;
   const int ENCB = 18;
 };

@@ -23,7 +23,7 @@ int newValue, oldValue;
  */
 void IRAM_ATTR isr() {
 
-  newValue = ((digitalRead(19) << 1) | digitalRead(18));
+  newValue = ((digitalRead(21) << 1) | digitalRead(18));
   int value = encoderArray[oldValue][newValue];
   if (value == X){
       errorCount++;

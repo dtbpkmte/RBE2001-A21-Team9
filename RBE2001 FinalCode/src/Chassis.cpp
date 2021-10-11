@@ -6,7 +6,7 @@ void Chassis::driveDistance(float inches)
 {
     int degrees = -(inches * 360 / PI / wheelDiameter); 
     left_motor.startMoveFor(degrees, chassisAngularSpeed);
-    right_motor.moveFor(degrees, chassisAngularSpeed);
+    right_motor.startMoveFor(degrees, chassisAngularSpeed);
 }
 
 void Chassis::turnAngle(float robotDegrees)
@@ -18,21 +18,29 @@ void Chassis::turnAngle(float robotDegrees)
 }
 
 // Positive is counterclockwise
-void Chassis::turnAnglePID(float angle){
-    float leftSetpoint = -(angle * wheelTrack / wheelDiameter) + left_motor.getCurrentDegrees();
-    float rightSetpoint = (angle * wheelTrack / wheelDiameter) + right_motor.getCurrentDegrees();
-    
-    while (true) {
-        float effortLeft = KpAngle * (leftSetpoint - left_motor.getCurrentDegrees());
-        float effortRight = KpAngle * 0.8 * (rightSetpoint - right_motor.getCurrentDegrees());
-        printf("Left Setpoint %f Right Setpoint %f Left deg %f Left motor %f Right def %f Right motor %f\n", 
-                leftSetpoint, rightSetpoint, left_motor.getCurrentDegrees(), effortLeft, right_motor.getCurrentDegrees(),effortRight);
-        
-        left_motor.setEffort(effortLeft);
-        right_motor.setEffort(effortRight);
+bool Chassis::turnAnglePID(float angle){
+    static bool setPoint_Hadset = false;
+    if (!setPoint_Hadset) {
+        leftSetpoint = -(angle * wheelTrack / wheelDiameter) + left_motor.getCurrentDegrees();
+        rightSetpoint = (angle * wheelTrack / wheelDiameter) + right_motor.getCurrentDegrees();
+        setPoint_Hadset = true;
     }
+    float errorLeft = leftSetpoint - left_motor.getCurrentDegrees();
+    float errorRight = rightSetpoint - right_motor.getCurrentDegrees();
+    float effortLeft = KpAngle * errorLeft;
+    float effortRight = KpAngle * 0.8 * errorRight;
+    printf("Left Setpoint %f Right Setpoint %f Left deg %f Left motor %f Right def %f Right motor %f\n", 
+            leftSetpoint, rightSetpoint, left_motor.getCurrentDegrees(), effortLeft, right_motor.getCurrentDegrees(),effortRight);
+    
+    left_motor.setEffort(effortLeft);
+    right_motor.setEffort(effortRight);
 
- 
+    if (withinEpsilon(errorLeft, threshold) && 
+        withinEpsilon(errorRight, threshold)) {
+            setPoint_Hadset = false;
+            return true;
+        }
+    return false;
 }
 
 void Chassis::drive(float effort) {

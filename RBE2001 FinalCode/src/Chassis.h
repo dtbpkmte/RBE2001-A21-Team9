@@ -1,11 +1,12 @@
 #pragma once
 #include <RBE1001Lib.h>
+#include "Utility.h"
 
 class Chassis {
  public:
   void driveDistance(float inches);
   void turnAngle(float angle);
-  void turnAnglePID(float Angle);
+  bool turnAnglePID(float Angle);
   void drive(float effort);
   void turnLeft();
   void turnRight();
@@ -21,4 +22,8 @@ class Chassis {
   const float wheelTrack = 5.75;
   const float chassisAngularSpeed = 100.0; // deg/s
   const float KpAngle = 1.0/(180*4);
+  const float threshold = 50; // deg
+
+  float leftSetpoint = 0;
+  float rightSetpoint = 0;
 };

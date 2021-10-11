@@ -9,7 +9,6 @@
 #include <ESP32AnalogRead.h>
 #include <LineFollowing.h>
 
-
 //define the key on IR Remote
 int VOL_PLUS = 2;
 int VOL_MINUS = 0;
@@ -20,6 +19,8 @@ int KEY3 = 18;
 int KEY4 = 20;
 int KEY5 = 21;
 int KEY6 = 22;
+int KEY7 = 24;
+int KEY8 = 25;
 int ENTER = 9;
 int CH_PLUS = 10;
 int CH_MINUS = 8;
