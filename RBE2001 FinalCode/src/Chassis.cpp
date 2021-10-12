@@ -2,20 +2,39 @@
 #include <RBE1001Lib.h>
 
 
-void Chassis::driveDistance(float inches)
+bool Chassis::driveDistance(float inches)
 {
-    int degrees = -(inches * 360 / PI / wheelDiameter); 
-    left_motor.startMoveFor(degrees, chassisAngularSpeed);
-    right_motor.startMoveFor(degrees, chassisAngularSpeed);
+    static bool setPoint_Hadset = false;
+    if (!setPoint_Hadset) {
+        leftSetpoint = (inches * 360 / PI / wheelDiameter) + left_motor.getCurrentDegrees();
+        rightSetpoint = (inches * 360 / PI / wheelDiameter) + right_motor.getCurrentDegrees();
+        setPoint_Hadset = true;
+    }
+    float errorLeft = leftSetpoint - left_motor.getCurrentDegrees();
+    float errorRight = rightSetpoint - right_motor.getCurrentDegrees();
+    float speedLeft = Kp * errorLeft;
+    float speedRight = Kp * errorRight;
+    printf("Left Setpoint %f Right Setpoint %f Left deg %f Left motor %f Right def %f Right motor %f\n", 
+            leftSetpoint, rightSetpoint, left_motor.getCurrentDegrees(), speedLeft, right_motor.getCurrentDegrees(),speedRight);
+    
+    left_motor.setSpeed(speedLeft);
+    right_motor.setSpeed(speedRight);
+
+    if (withinEpsilon(errorLeft, threshold) && 
+        withinEpsilon(errorRight, threshold)) {
+            setPoint_Hadset = false;
+            return true;
+        }
+    return false;
 }
 
-void Chassis::turnAngle(float robotDegrees)
-{
-    int wheelDegrees = -(robotDegrees * wheelTrack / wheelDiameter);
+// void Chassis::turnAngle(float robotDegrees)
+// {
+//     int wheelDegrees = -(robotDegrees * wheelTrack / wheelDiameter);
 
-    left_motor.startMoveFor(wheelDegrees, chassisAngularSpeed);
-    right_motor.moveFor(-wheelDegrees, chassisAngularSpeed);
-}
+//     left_motor.startMoveFor(wheelDegrees, chassisAngularSpeed);
+//     right_motor.moveFor(-wheelDegrees, chassisAngularSpeed);
+// }
 
 // Positive is counterclockwise
 bool Chassis::turnAnglePID(float angle){
@@ -27,13 +46,13 @@ bool Chassis::turnAnglePID(float angle){
     }
     float errorLeft = leftSetpoint - left_motor.getCurrentDegrees();
     float errorRight = rightSetpoint - right_motor.getCurrentDegrees();
-    float effortLeft = KpAngle * errorLeft;
-    float effortRight = KpAngle * 0.8 * errorRight;
+    float speedLeft = Kp * errorLeft;
+    float speedRight = Kp * errorRight;
     printf("Left Setpoint %f Right Setpoint %f Left deg %f Left motor %f Right def %f Right motor %f\n", 
-            leftSetpoint, rightSetpoint, left_motor.getCurrentDegrees(), effortLeft, right_motor.getCurrentDegrees(),effortRight);
+            leftSetpoint, rightSetpoint, left_motor.getCurrentDegrees(), speedLeft, right_motor.getCurrentDegrees(),speedRight);
     
-    left_motor.setEffort(effortLeft);
-    right_motor.setEffort(effortRight);
+    left_motor.setSpeed(speedLeft);
+    right_motor.setSpeed(speedRight);
 
     if (withinEpsilon(errorLeft, threshold) && 
         withinEpsilon(errorRight, threshold)) {
@@ -43,14 +62,16 @@ bool Chassis::turnAnglePID(float angle){
     return false;
 }
 
+// drive by effort [-1, 1]
 void Chassis::drive(float effort) {
-    left_motor.setEffort(effort);
-    right_motor.setEffort(effort);
+    left_motor.setSpeed(effort * chassisMaxSpeed);
+    right_motor.setSpeed(effort * chassisMaxSpeed);
 }
 
-void Chassis::stop(){
-    left_motor.setEffort(0);
-    right_motor.setEffort(0);
+// TODO: test if this can stop immediately
+bool Chassis::stop(){
+    left_motor.setSpeed(0);
+    right_motor.setSpeed(0);
 }
 // void Chassis::turn180(){
 //     left_motor.setSpeed(-180);
@@ -71,7 +92,7 @@ void Chassis::stop(){
 //  }
 
 
-void Chassis::turnAround()
+bool Chassis::turnAround()
 {
 //  left_motor.setSpeed(180);
 //  right_motor.setSpeed(-180);
@@ -81,17 +102,17 @@ void Chassis::turnAround()
 //   drive(60);
 //   delay (1000);
 //   stop();
-    turnAngle(180.0);
+    return turnAnglePID(180.0);
 }
 
-void Chassis::turnRight(){
+bool Chassis::turnRight(){
     // left_motor.moveFor(360, 100);
     // Serial.println("turned Right");
-    turnAngle(-90);
+    return turnAnglePID(-90);
 }
 
-void Chassis::turnLeft(){
+bool Chassis::turnLeft(){
     // right_motor.moveFor(360, 100);
     // Serial.println("Turned Left");
-    turnAngle(90);
+    return turnAnglePID(90);
 }

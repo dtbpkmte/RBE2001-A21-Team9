@@ -76,12 +76,23 @@ void lineFollow(int baseSpeed)
  
 }
 
+bool followLineUntilIntersection() {
+    int leftReading = sqrt(analogRead(LEFT_LINE_SENSE));
+    int rightReading = sqrt(analogRead(RIGHT_LINE_SENSE));
+    int error = leftReading - rightReading;
+
+    chassis.left_motor.setSpeed(LINE_FOLLOW_ANGULAR_SPEED - error * K_P);
+    chassis.right_motor.setSpeed(LINE_FOLLOW_ANGULAR_SPEED + error * K_P);
+}
+
+// TODO: test this
 bool meetIntersection(void){
     bool value = false;
     int currLeft = analogRead(LEFT_LINE_SENSE);
     int currRight = analogRead(RIGHT_LINE_SENSE);
     if(currLeft > setPointOn && currRight > setPointOn){
        value = true;   
-        } return value;
+    } 
+    return value;
 
 }
