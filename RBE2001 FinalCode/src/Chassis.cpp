@@ -1,19 +1,19 @@
 #include "Chassis.h"
 #include <RBE1001Lib.h>
-
+#include <math.h>
 
 bool Chassis::driveDistance(float inches)
 {
     static bool setPoint_Hadset = false;
     if (!setPoint_Hadset) {
-        leftSetpoint = (inches * 360 / PI / wheelDiameter) + left_motor.getCurrentDegrees();
-        rightSetpoint = (inches * 360 / PI / wheelDiameter) + right_motor.getCurrentDegrees();
+        leftSetpoint = -(inches * 360 / PI / wheelDiameter) + left_motor.getCurrentDegrees();
+        rightSetpoint = -(inches * 360 / PI / wheelDiameter) + right_motor.getCurrentDegrees();
         setPoint_Hadset = true;
     }
     float errorLeft = leftSetpoint - left_motor.getCurrentDegrees();
     float errorRight = rightSetpoint - right_motor.getCurrentDegrees();
-    float speedLeft = Kp * errorLeft;
-    float speedRight = Kp * errorRight;
+    float speedLeft = Kp * errorLeft / 3;
+    float speedRight = Kp * errorRight / 3;
     printf("Left Setpoint %f Right Setpoint %f Left deg %f Left motor %f Right def %f Right motor %f\n", 
             leftSetpoint, rightSetpoint, left_motor.getCurrentDegrees(), speedLeft, right_motor.getCurrentDegrees(),speedRight);
     
@@ -23,6 +23,7 @@ bool Chassis::driveDistance(float inches)
     if (withinEpsilon(errorLeft, threshold) && 
         withinEpsilon(errorRight, threshold)) {
             setPoint_Hadset = false;
+            stop();
             return true;
         }
     return false;
@@ -40,14 +41,14 @@ bool Chassis::driveDistance(float inches)
 bool Chassis::turnAnglePID(float angle){
     static bool setPoint_Hadset = false;
     if (!setPoint_Hadset) {
-        leftSetpoint = -(angle * wheelTrack / wheelDiameter) + left_motor.getCurrentDegrees();
-        rightSetpoint = (angle * wheelTrack / wheelDiameter) + right_motor.getCurrentDegrees();
+        leftSetpoint = (angle * wheelTrack / wheelDiameter) + left_motor.getCurrentDegrees();
+        rightSetpoint = -(angle * wheelTrack / wheelDiameter) + right_motor.getCurrentDegrees();
         setPoint_Hadset = true;
     }
     float errorLeft = leftSetpoint - left_motor.getCurrentDegrees();
     float errorRight = rightSetpoint - right_motor.getCurrentDegrees();
-    float speedLeft = Kp * errorLeft;
-    float speedRight = Kp * errorRight;
+    float speedLeft = min(Kp * errorLeft / 3, (float) 100.0);
+    float speedRight = min(Kp * errorRight / 3, (float) 100.0);
     printf("Left Setpoint %f Right Setpoint %f Left deg %f Left motor %f Right def %f Right motor %f\n", 
             leftSetpoint, rightSetpoint, left_motor.getCurrentDegrees(), speedLeft, right_motor.getCurrentDegrees(),speedRight);
     
@@ -57,6 +58,7 @@ bool Chassis::turnAnglePID(float angle){
     if (withinEpsilon(errorLeft, threshold) && 
         withinEpsilon(errorRight, threshold)) {
             setPoint_Hadset = false;
+            stop();
             return true;
         }
     return false;

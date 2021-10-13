@@ -26,6 +26,7 @@ int CH_PLUS = 10;
 int CH_MINUS = 8;
 int PLAY = 1;
 int RETURN = 14;
+int SETUP = 4;
 
 
 float targetWheelAngle = 0;
@@ -56,7 +57,6 @@ IRDecoder decoder(IR_DETECTOR_PIN);
 
 Servo lifter;
 ESP32AnalogRead servoPositionFeedback;
-Rangefinder ultrasonic;
 Navigation navigator;
 double Kp = 0.05;
 double Ki = 0.0; // 0.04;
@@ -72,17 +72,17 @@ float outputUltra;
 int updateKey = 0;
 
 //Blue Motor PID values
-const double KpMotor = 700.0/9362; //Kp for PLA: 700/9362
-const double KiMotor = 0.00005; //Ki for PLA: 0.00005
-const double KdMotor = 0.0005; //Kd for PLA: 0.0005
+const double KpMotor = 3333.0/9362; //Kp for PLA: 700/9362
+const double KiMotor = 0.10000; //Ki for PLA: 0.00005
+const double KdMotor = 0.0; //Kd for PLA: 0.0005
 
 Timer printTimer(500);
-Timer PIDTimer(20);
+Timer PIDTimer(10);
 
 
 
 
-Rangefinder ultra;
+
 
 // Create a button object for the built-in button on the ESP32
 Button bootButton(BOOT_FLAG_PIN);

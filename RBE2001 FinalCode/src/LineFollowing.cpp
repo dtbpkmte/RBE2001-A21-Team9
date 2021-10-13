@@ -1,12 +1,13 @@
 #include <LineFollowing.h>
+#include <math.h>
 
 unsigned long lastTime = 0;
 const unsigned long LINE_FOLLOWING_INTERVAL = 2;
-
+Rangefinder ultra;
 Chassis chassis;
 
-int setPointOn = 135;
-int setPointOff = 2000;
+int setPointOn = 3400;
+int setPointOff = 70;
 //int setPoint = 55;
 
 float K_P = 0.1;
@@ -19,70 +20,41 @@ float lastErrorRight = 0;
 
 float leftMotorSpeed = 0 ;
 float rightMotorSpeed = 0;
-void lineFollow(int baseSpeed)
 
-{
-    unsigned long currTime = millis();
-   if(currTime - lastTime > LINE_FOLLOWING_INTERVAL)
-    {
-        //read sensors
-        float leftLineSense = analogRead(LEFT_LINE_SENSE);
-        float rightLineSense = analogRead(RIGHT_LINE_SENSE);
-        int currLeft = leftLineSense;
-        int currRight = rightLineSense;
-
-        //comand the motors
-        if (currLeft > setPointOn) //need to move right
-        {
-            float errorLeft = abs(setPointOn - currLeft);
-            float deltaErrorLeft = abs(errorLeft - lastErrorLeft);
-            float effortLeft = K_P * errorLeft + K_I * deltaErrorLeft;
-
- 
-            //move right motor faster
-            leftMotorSpeed = baseSpeed + effortLeft;
-            rightMotorSpeed = baseSpeed - effortLeft;
-
-            chassis.left_motor.setSpeed(leftMotorSpeed);
-            chassis.right_motor.setSpeed(rightMotorSpeed);
-
-            lastErrorLeft = errorLeft;
-        }
-
-        if (currRight > setPointOn)  //need to move right
-        {
-
-            float errorRight = abs(setPointOn - currRight);
-            float deltaErrorRight = abs(errorRight - lastErrorRight);
-            float effortRight = K_P * errorRight + K_I * deltaErrorRight;
-
-             //move left motor faster
-
-            leftMotorSpeed = baseSpeed - effortRight;
-            rightMotorSpeed = baseSpeed + effortRight;
-            chassis.left_motor.setSpeed(leftMotorSpeed);
-            chassis.right_motor.setSpeed(rightMotorSpeed);
-            lastErrorRight = errorRight;
-        }
-
-        if(currLeft < setPointOff && currRight < setPointOff)
-        {
-           chassis.drive(baseSpeed);
-
-        }
-    lastTime = currTime;
-
-    }
- 
-}
-
-bool followLineUntilIntersection() {
+float LINE_FOLLOW_ANGULAR_SPEED = 150.0;
+bool followLineUntilIntersection(float lol) {
     int leftReading = sqrt(analogRead(LEFT_LINE_SENSE));
     int rightReading = sqrt(analogRead(RIGHT_LINE_SENSE));
     int error = leftReading - rightReading;
+    
+    printf("L=%f R=%f error=%f\n", leftReading, rightReading, error);
+    chassis.left_motor.setSpeed(-(LINE_FOLLOW_ANGULAR_SPEED - error * K_P*10));
+    chassis.right_motor.setSpeed(-(LINE_FOLLOW_ANGULAR_SPEED + error * K_P*10));
 
-    chassis.left_motor.setSpeed(LINE_FOLLOW_ANGULAR_SPEED - error * K_P);
-    chassis.right_motor.setSpeed(LINE_FOLLOW_ANGULAR_SPEED + error * K_P);
+
+    bool mi;
+    if (mi = meetIntersection()) {
+        chassis.stop();
+    }
+    return mi;
+}
+
+bool followLineUntilDistance(float distance) {
+    float currentDistance = ultra.getDistanceCM();
+    float leftReading = sqrt(analogRead(LEFT_LINE_SENSE));
+    float rightReading = sqrt(analogRead(RIGHT_LINE_SENSE));
+    float error = leftReading - rightReading;
+    
+    // printf("L=%f R=% error=%f\n", error);
+    chassis.left_motor.setSpeed(-(LINE_FOLLOW_ANGULAR_SPEED - error * K_P*10));
+    chassis.right_motor.setSpeed(-(LINE_FOLLOW_ANGULAR_SPEED + error * K_P*10));
+
+    bool mi = false;
+    if (withinEpsilon(currentDistance-distance, 1)) {
+        chassis.stop();
+        mi = true;
+    }
+    return mi;
 }
 
 // TODO: test this
@@ -95,4 +67,14 @@ bool meetIntersection(void){
     } 
     return value;
 
+}
+
+bool driveUntilLine(float f) {
+    if (!meetIntersection()) {
+        chassis.left_motor.setSpeed(-300.0);
+        chassis.right_motor.setSpeed(-300.0);
+        return false;
+    } 
+    chassis.stop();
+    return true;
 }

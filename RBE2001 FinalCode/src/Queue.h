@@ -9,7 +9,7 @@ class QueueNode {
         ~QueueNode();
 
         T data;
-        QueueNode *nextPtr;
+        QueueNode *nextPtr = NULL;
 };
 
 template<class T>

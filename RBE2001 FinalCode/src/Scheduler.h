@@ -20,6 +20,8 @@ public:
         taskQueue.enqueue(task);
         taskArgsQueue.enqueue(arg);
         priorityQueue.enqueue(curPriority);
+        taskStatusQueue.enqueue(false);
+        printf("New task %p added with priority=%d\n", task, curPriority);
         ++numTasks;
         if (tt == TaskType::SEQUENTIAL) {
             ++curPriority;
@@ -37,24 +39,37 @@ public:
     {
         if (!paused)
         {
-            QueueNode<bool (*)(float)> *task = taskQueue.head;
-            QueueNode<float> *taskArg = taskArgsQueue.head;
-            QueueNode<int> *priority = priorityQueue.head;
-            int prevPriority = priority->data;
-            while (priority->data == prevPriority) {
-                if ((*(task->data))(taskArg->data))
-                {
-                    taskQueue.dequeue();
-                    taskArgsQueue.dequeue();
-                    priorityQueue.dequeue();
-                    --numTasks;
-                    printf("Done 1 task\n");
+            int n = numTasks;
+            if (n) {
+                QueueNode<bool (*)(float)> *task = taskQueue.head;
+                QueueNode<float> *taskArg = taskArgsQueue.head;
+                QueueNode<int> *priority = priorityQueue.head;
+                QueueNode<bool> *taskStatus = taskStatusQueue.head;
+                int prevPriority = priority->data;
+                while (priority->data == prevPriority) {
+                    if (taskStatus->data)
+                    {
+                        if (task == taskQueue.head){
+                            taskQueue.dequeue();
+                            taskArgsQueue.dequeue();
+                            priorityQueue.dequeue();
+                            taskStatusQueue.dequeue();
+                            --numTasks;
+                            printf("Dequeued task %p\n", task->data);   
+                            if (numTasks == 0) curPriority = 0;           
+                        }
+                    } else {
+                        taskStatus->data = (*(task->data))(taskArg->data);
+                        if (taskStatus->data)
+                            printf("Task %p completed\n", task->data);
+                    }
+                    if (--n > 0) {
+                        task = task->nextPtr;
+                        taskArg = taskArg->nextPtr;
+                        priority = priority->nextPtr;
+                        taskStatus = taskStatus->nextPtr;
+                    } else break;
                 }
-                if (task->nextPtr != NULL) {
-                    task = task->nextPtr;
-                    taskArg = taskArg->nextPtr;
-                    priority = priority->nextPtr;
-                } else break;
             }
         }
     }
@@ -63,7 +78,7 @@ public:
     {
         if (!paused)
         {
-            printf("sched::pause");
+            printf("sched::pause\n");
             (*pauseTask)();
             paused = true;
             return true;
@@ -75,8 +90,20 @@ public:
     {
         if (paused)
         {
-            printf("sched::resume");
+            printf("sched::resume\n");
             paused = false;
+            return true;
+        }
+        return false;
+    }
+
+    bool terminateCurrentTask() {
+        if (numTasks) {
+            taskQueue.dequeue();
+            taskArgsQueue.dequeue();
+            priorityQueue.dequeue();
+            taskStatusQueue.dequeue();
+            --numTasks;
             return true;
         }
         return false;
@@ -86,6 +113,7 @@ private:
     unsigned int numTasks = 0;
     // bool (*taskList[MAX_NUM_TASKS]) (float);
     Queue<bool (*)(float)> taskQueue;
+    Queue<bool> taskStatusQueue;
     // float taskArgs[MAX_NUM_TASKS];
     Queue<float> taskArgsQueue;
     int curPriority = 0;

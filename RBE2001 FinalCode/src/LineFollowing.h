@@ -2,14 +2,15 @@
 #include <ESP32AnalogRead.h>
 #include <button.h>
 #include <Chassis.h>
-
+extern Rangefinder ultra;
 extern Chassis chassis;
 
-void lineFollow(int);
 bool meetIntersection();
 
 //
-bool followLineUntilIntersection();
+bool followLineUntilIntersection(float);
+bool followLineUntilDistance(float distance);
+bool driveUntilLine(float);
 
 //unsigned long = positive long integer
 extern unsigned long lastTime;
@@ -31,4 +32,4 @@ extern float lastErrorRight;
 extern float leftMotorSpeed;
 extern float rightMotorSpeed;
 
-float LINE_FOLLOW_ANGULAR_SPEED = 300.0;
+extern float LINE_FOLLOW_ANGULAR_SPEED;

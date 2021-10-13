@@ -13,16 +13,16 @@ class Chassis {
   void turnStraight();
   bool stop();
   bool turnAround();
-  LeftMotor left_motor;
-  RightMotor right_motor;
+  LeftMotor right_motor;
+  RightMotor left_motor;
  private:
 
   const float wheelDiameter = 2.8;
   const float degreesPerInch = 360 / (wheelDiameter * 3.14);
   const float wheelTrack = 5.75;
-  const float chassisMaxSpeed = 300.0; // deg/s
-  const float Kp = chassisMaxSpeed/(180*4);
-  const float threshold = 20; // deg
+  const float chassisMaxSpeed = 200.0; // deg/s
+  const float Kp = chassisMaxSpeed/(180/3);
+  const float threshold = 3; // deg
 
   float leftSetpoint = 0;
   float rightSetpoint = 0;

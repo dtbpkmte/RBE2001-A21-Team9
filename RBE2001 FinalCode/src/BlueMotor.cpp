@@ -6,8 +6,9 @@ long count = 0;  // encoder counter
 long errorCount = 0;
 // Mutex for the count critical variable
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-
-
+double POSITION_0DEG = 0.0;
+double POSITION_45DEG = 4803.0;
+double POSITION_25DEG = 9362.0;
 const int X = 5;
 int encoderArray[4][4] = {
   {0, -1, 1, X},
@@ -55,7 +56,7 @@ void BlueMotor::setup() {
   digitalWrite(AIN2, HIGH);
   pinMode(PWM, OUTPUT);
   attachInterrupt(ENCA, isr, CHANGE);
-  attachInterrupt(ENCA, isr, CHANGE);
+  attachInterrupt(ENCB, isr, CHANGE);
 }
 
 /**

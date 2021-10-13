@@ -5,6 +5,22 @@
 
 extern Rangefinder ultrasonic;
 
+bool Navigation::isOnRoadA(){
+    bool ok = currRoad == ROAD_A;
+    return ok;
+}
+bool Navigation::isOnRoadB(){
+    bool ok = currRoad == ROAD_B;
+    return ok;    
+}
+bool Navigation::isOnRoadC(){
+    bool ok = currRoad == ROAD_C;
+    return ok;    
+}
+bool Navigation::isOnRoadD(){
+    bool ok = currRoad == ROAD_D;
+    return ok;    
+}
 
 void Navigation::updateDestination (int key){
   if(key == 16){

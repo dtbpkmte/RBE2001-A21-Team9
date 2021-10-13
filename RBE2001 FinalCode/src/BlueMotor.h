@@ -1,6 +1,12 @@
 #pragma once
 
+extern double POSITION_0DEG ;
+extern double POSITION_45DEG ;
+extern double POSITION_25DEG ;
+
+
 class BlueMotor {
+
  public:
   void setEffort(int effort);
   int setEffortWithoutDB(int effort);
